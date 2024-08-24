@@ -56,7 +56,7 @@ class _PrescriptionGeneratorPageState extends State<PrescriptionGeneratorPage> {
   Future<void> _transcribeAudio() async {
     try {
       final whisperUrl = Uri.parse('https://api.openai.com/v1/audio/transcriptions');
-      const apiKey = 'openai_api_key'; // Replace with your actual OpenAI API key
+      const apiKey = 'sk-proj-XwzTZBKzLQIKQSVUKbMiT3BlbkFJ8OllKCekj08TLlbIPwuT'; // Replace with your actual OpenAI API key
       var request = http.MultipartRequest('POST', whisperUrl);
       request.headers['Authorization'] = 'Bearer $apiKey';
       request.fields['model'] = 'whisper-1';

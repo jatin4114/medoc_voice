@@ -4,6 +4,8 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 class PrescriptionGeneratorPage extends StatefulWidget {
   const PrescriptionGeneratorPage({super.key});
@@ -20,15 +22,26 @@ class _PrescriptionGeneratorPageState extends State<PrescriptionGeneratorPage> {
   bool _isLoading = false;
   String _generatedPrescription = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _initRecorder(); // Initialize the recorder when the widget is created
+  }
+
   Future<void> _initRecorder() async {
     try {
-      if (await record.hasPermission()) {
-        setState(() {_errorMessage = '';});
+      // Check and request microphone permission
+      if (await Permission.microphone.request().isGranted) {
+        setState(() {
+          _errorMessage = '';
+        });
       } else {
         throw Exception('Microphone permission not granted');
       }
     } catch (e) {
-      setState(() {_errorMessage = 'Failed to initialize recorder: $e';});
+      setState(() {
+        _errorMessage = 'Failed to initialize recorder: $e';
+      });
     }
   }
 
@@ -37,9 +50,15 @@ class _PrescriptionGeneratorPageState extends State<PrescriptionGeneratorPage> {
       Directory tempDir = await getTemporaryDirectory();
       _filePath = '${tempDir.path}/audio.m4a';
       await record.start(const RecordConfig(), path: _filePath);
-      setState(() {_isRecording = true;_errorMessage = '';});
+      setState(() {
+        _isRecording = true;
+        _errorMessage = '';
+      });
     } catch (e) {
-      setState(() {print(e);_errorMessage = 'Failed to start recording: $e';});
+      setState(() {
+        print(e);
+        _errorMessage = 'Failed to start recording: $e';
+      });
     }
   }
 
@@ -56,7 +75,7 @@ class _PrescriptionGeneratorPageState extends State<PrescriptionGeneratorPage> {
   Future<void> _transcribeAudio() async {
     try {
       final whisperUrl = Uri.parse('https://api.openai.com/v1/audio/transcriptions');
-      const apiKey = 'openai_key'; // Replace with your actual OpenAI API key
+      const apiKey = 'open_api_key'; // Replace with your actual OpenAI API key
       var request = http.MultipartRequest('POST', whisperUrl);
       request.headers['Authorization'] = 'Bearer $apiKey';
       request.fields['model'] = 'whisper-1';
@@ -87,7 +106,7 @@ class _PrescriptionGeneratorPageState extends State<PrescriptionGeneratorPage> {
         _isLoading = true;
       });
 
-      const apiKey = 'gemini_key';
+      const apiKey = 'gemini_api_key';
 
       final model = GenerativeModel(
         model: 'gemini-1.5-flash',
