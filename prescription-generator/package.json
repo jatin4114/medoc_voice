@@ -1,0 +1,29 @@
+{
+  "name": "flask-server",
+  "version": "1.0.0",
+  "description": "to run this server...\r 1. api keys must be at their place\\\r 2. openai key must be placed in env variable or  can be set in bash terminal\r 3. gemini key too can be placed  in env variable (good practice) but for early stage and for ease of use, it is directly placed in the server.py file.\r 4. Install requirements from requirements.txt file \r         pip install -r requirements.txt\r 5. You are good to go.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.1.0",
+    "@types/multer": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.15.11",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.4"
+  }
+}
+
