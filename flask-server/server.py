@@ -255,4 +255,3 @@ def test():
 if __name__ == '__main__':
     app.run(debug=True)
     
- # $env:OPENAI_API_KEY="sk-TvvW2XpIyCuz4IbDBwWYOEtl4k2M0wUMkfonBTh6nLT3BlbkFJ-o_JlDubYigSotP3wRm8wv-yULvW_x4eX2hThcVi8A"
