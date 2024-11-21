@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from openai import OpenAI
 import datetime
 import google.generativeai as genai
+from flask_cors import CORS  # Import CORS
 # from io import BytesIO
 
 client = OpenAI()
@@ -173,20 +174,9 @@ Output:
 '''
 
 app = Flask(__name__)
+CORS(app)
 
-from flask import Flask, request, jsonify
-from openai import OpenAI
-
-app = Flask(__name__)
-
-client = OpenAI()  # Initialize the OpenAI client
-
-from flask import Flask, request, jsonify
-from io import BytesIO
-from openai import OpenAI
-
-app = Flask(__name__)
-client = OpenAI()
+transcription_data = None
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
@@ -212,33 +202,57 @@ def transcribe_audio():
             response_format="text"
         )
         
+        # Print the transcript on the server console
+        print("Transcription:", transcript)
+        
+        # Store the transcript for retrieval
+        global transcription_data
+        transcription_data = transcript
+      
         return jsonify({"transcription": transcript})
     except Exception as e:
+        print("Transcription error:", e)   
         return jsonify({"error": f"Transcription failed: {str(e)}"}), 500
 
+# Endpoint to retrieve the current transcription data
+@app.route('/get_transcription', methods=['GET'])
+def get_transcription():
+    global transcription_data
+    if transcription_data is None:
+        return jsonify({"error": "No transcription available."}), 404
+    return jsonify({"transcription": transcription_data})
+
+# Endpoint to generate a prescription using transcription data
 @app.route('/generate_prescription', methods=['POST'])
 def generate_prescription():
-    data = request.get_json()
-    if 'transcription' not in data:
-        return jsonify({"error": "Transcription text not provided."}), 400
+    global transcription_data
+    if transcription_data is None:
+        return jsonify({"error": "No transcription data available to generate prescription."}), 400
 
-    transcription = data['transcription']
-    location = data.get('location', "xxxxxxx")
-    current_date = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d")
-
+    location = request.json.get('location', "Unknown Location")
+    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
     system_prompt_with_date_location = f"{system_prompt}\n\nDate: {current_date}\nLocation: {location}"
+    
     try:
-        response = gemini_model.generate_content([system_prompt_with_date_location, transcription])
+        response = gemini_model.generate_content([system_prompt_with_date_location, transcription_data])
         prescription = response.text
         return jsonify({"prescription": prescription})
-    except genai.Error as e:
-        return jsonify({"error": f"Gemini API Error: {e}"}), 500
     except Exception as e:
-        return jsonify({"error": f"Prescription generation failed: {e}"}), 500
-     
+        return jsonify({"error": f"Prescription generation failed: {str(e)}"}), 500
+
+# Optional endpoint to reset transcription data
+@app.route('/reset_transcription', methods=['POST'])
+def reset_transcription():
+    global transcription_data
+    transcription_data = None
+    return jsonify({"message": "Transcription data reset."}), 200
+
+# Test endpoint
 @app.route('/test', methods=['POST'])
 def test():
-   return "Test Successful"
+    return "Test Successful"
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
+ # $env:OPENAI_API_KEY="sk-TvvW2XpIyCuz4IbDBwWYOEtl4k2M0wUMkfonBTh6nLT3BlbkFJ-o_JlDubYigSotP3wRm8wv-yULvW_x4eX2hThcVi8A"
