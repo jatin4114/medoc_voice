@@ -1,6 +1,8 @@
+import json
 from flask import Flask, request, jsonify
 from openai import OpenAI
 import datetime
+import re
 import google.generativeai as genai
 from flask_cors import CORS  # Import CORS
 # from io import BytesIO
@@ -51,7 +53,7 @@ Generate a structured prescription with the following components:
     "vitals": {
       "BP": "",
       "Heartrate": "",
-      "Respiratory rate": "",
+      "RespiratoryRate": "",
       "temp": "",
       "spO2": ""
     },
@@ -146,11 +148,42 @@ def generate_prescription():
     system_prompt_with_date_location = f"{system_prompt}\n\nDate: {current_date}\nLocation: {location}"
     
     try:
+        # Generate the prescription
         response = gemini_model.generate_content([system_prompt_with_date_location, transcription_data])
-        prescription = response.text
-        return jsonify({"prescription": prescription})
+        prescription_raw = response.text
+
+        # Log the raw response for debugging
+        print("Raw Prescription Response:", prescription_raw)
+
+        # Remove Markdown markers and any extra data
+        if prescription_raw.startswith("```json"):
+            prescription_raw = prescription_raw[7:]
+        if prescription_raw.endswith("```"):
+            prescription_raw = prescription_raw[:-3]
+
+        # Remove extra characters after the valid JSON
+        last_closing_brace_index = prescription_raw.rfind("}")
+        if last_closing_brace_index != -1:
+            prescription_raw = prescription_raw[:last_closing_brace_index + 1]
+
+        # Log cleaned response
+        print("Cleaned Prescription Response:", prescription_raw)
+
+        # Parse cleaned JSON
+        prescription = json.loads(prescription_raw)
+        print(prescription)
+
+        # Return properly formatted JSON
+        return jsonify({"prescription":prescription})
+
+    except json.JSONDecodeError as e:
+        print("JSONDecodeError:", e)
+        return jsonify({"error": "Failed to parse prescription as JSON.", "details": str(e)}), 500
     except Exception as e:
+        print("Error Generating Prescription:", e)
         return jsonify({"error": f"Prescription generation failed: {str(e)}"}), 500
+
+
 
 # Optional endpoint to reset transcription data
 @app.route('/reset_transcription', methods=['POST'])
