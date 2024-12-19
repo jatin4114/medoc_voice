@@ -10,7 +10,7 @@ from flask_cors import CORS  # Import CORS
 client = OpenAI()
 # Configuration
 # client.api_key = "asd"
-genai.configure(api_key="AIzaSyDffilkoKPWY45U13XhWTaw71kzrrVZAl0")  
+genai.configure(api_key="gemini_api_key")  
 
 # Models
 gemini_model = genai.GenerativeModel(model_name="gemini-1.5-flash")
@@ -86,6 +86,7 @@ Generate a structured prescription with the following components:
 - Include follow-up instructions if mentioned by the doctor.
 - For each medication, provide clear and specific instructions in the medication field and leave it blank if information is missing and do not mention unclear.
 - For title extract a keyword from the provided information that represents its summary. 
+- For date the format should be in dd-MM-yyyy format
 
 '''
 
