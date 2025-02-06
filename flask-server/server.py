@@ -10,7 +10,7 @@ from flask_cors import CORS  # Import CORS
 client = OpenAI()
 # Configuration
 # client.api_key = "asd"
-genai.configure(api_key="gemini_api_key")  
+genai.configure(api_key="api_key")  
 
 # Models
 gemini_model = genai.GenerativeModel(model_name="gemini-1.5-flash")
